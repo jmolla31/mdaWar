@@ -21,8 +21,6 @@ namespace mdaWar
         {
             log.LogInformation("Creating a new QuickWar");
 
-            var weapons2 = new string[] { "watergun", "knife", "candlestick", "rifle", "posioned potato", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER" };
-
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var participants = JsonConvert.DeserializeObject<string[]>(requestBody);
 
