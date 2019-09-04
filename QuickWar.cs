@@ -66,6 +66,7 @@ namespace mdaWar
             {
                 "Welcome to the QuickWar endpoint help",
                 "To quickly simulate a war please send a POST request with a list of names for the contenders",
+                "Body JSON example: [\"JOHNDOE1\",\"JOHNDOE2\",\"JOHNDOE3\",\"JOHNDOE4\"]",
                 "The QuickWar endpoint will return the winner and a list of the battles ocurred in the war"
             };
 
