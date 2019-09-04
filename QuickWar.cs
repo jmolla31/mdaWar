@@ -21,19 +21,22 @@ namespace mdaWar
         {
             log.LogInformation("Creating a new QuickWar");
 
+            var weapons2 = new string[] { "watergun", "knife", "candlestick", "rifle", "posioned potato", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER" };
+
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var participants = JsonConvert.DeserializeObject<string[]>(requestBody);
 
             if (participants == null || participants.Length < 2) return new BadRequestObjectResult("Please upload a list with a least 2 participants");
 
-            var weapons = new string[] { "watergun", "knife", "candlestick", "rifle", "posioned potato", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER", "PLACEHOLDER" };
+            var weapons = new string[] { "watergun", "butter knife", "rusted candlestick", "toy rifle", "posioned potato", "broken Duff bottle",
+                                        "BelleDelphine bathwater jar", "Avril Lavigne marble sculpture", "area 51 stolen raygun"};
 
             var battles = new List<string>();
             var aliveParticipants = participants.ToList();
 
             Random random = new Random();
 
-            while (aliveParticipants.Count > 2)
+            while (aliveParticipants.Count > 1)
             {
                 var lives = random.Next(aliveParticipants.Count);
 
@@ -50,9 +53,9 @@ namespace mdaWar
                 aliveParticipants.RemoveAt(dies);
             }
 
-            battles.Add($"Final two survivors are {aliveParticipants[0]} and {aliveParticipants[1]}");
+            battles.Add($"Finally, the last survivor is {aliveParticipants[0]}");
 
-            return new OkObjectResult("");
+            return new OkObjectResult(battles);
         }
 
         [FunctionName("QuickWarHelp")]
