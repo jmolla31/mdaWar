@@ -11,6 +11,9 @@ namespace mdaWar
         {
         }
 
+        public DbSet<War> Wars { get; set; }
+        public DbSet<Participant> Participants { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             var war = modelBuilder.Entity<War>();

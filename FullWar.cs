@@ -7,27 +7,30 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace mdaWar
 {
-    public static class FullWar
+    public class FullWar
     {
+        private readonly Context context;
+
+        public FullWar(Context context)
+        {
+            this.context = context;
+        }
+
         [FunctionName("FullWar")]
-        public static async Task<IActionResult> Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            var duh = await this.context.Wars.ToListAsync();
 
-            string name = req.Query["name"];
+            log.LogInformation("Starting new battle round.");
 
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
-
-            return name != null
-                ? (ActionResult)new OkObjectResult($"Hello, {name}")
-                : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
+            return new OkObjectResult($"Hello");
         }
     }
 }
