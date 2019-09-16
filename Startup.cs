@@ -15,7 +15,7 @@ namespace mdaWar
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services.AddDbContext<Context>(
-                options => options.UseSqlServer(Environment.GetEnvironmentVariable("SqlConnectionString")));
+                options => options.UseSqlServer(Environment.GetEnvironmentVariable("SqlConnectionString"), sqlServerOptions => sqlServerOptions.EnableRetryOnFailure()));
         }
     }
 }

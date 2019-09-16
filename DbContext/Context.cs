@@ -7,7 +7,7 @@ namespace mdaWar
 {
     public class Context : DbContext
     {
-        public Context()
+        public Context(DbContextOptions<Context> options) : base(options)
         {
         }
 
@@ -26,5 +26,6 @@ namespace mdaWar
             participant.HasKey(x => x.Id);
             participant.HasOne(x => x.War).WithMany(x => x.Participants).HasForeignKey(x => x.WarId);
         }
+
     }
 }
