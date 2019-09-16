@@ -26,9 +26,25 @@ namespace mdaWar
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var duh = await this.context.Wars.ToListAsync();
-
             log.LogInformation("Starting new battle round.");
+
+            var warList = await this.context.Wars.ToListAsync();
+
+            Random random = new Random();
+
+            foreach (var war in warList)
+            {
+                var participants = await this.context.Participants.Where(x => x.WarId == war.Id).ToListAsync();
+
+                var lives = random.Next(participants.Count);
+
+                var dies = 0;
+                do
+                {
+                    dies = random.Next(participants.Count);
+                } while (lives == dies); 
+            }
+
 
             return new OkObjectResult($"Hello");
         }
