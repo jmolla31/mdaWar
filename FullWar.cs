@@ -53,6 +53,10 @@ namespace mdaWar
             });
 
             await this.context.AddRangeAsync(participants);
+
+            await this.context.SaveChangesAsync();
+
+            return new OkObjectResult(war.Id);
         }
 
         [FunctionName("FullWarSingleRun")]
