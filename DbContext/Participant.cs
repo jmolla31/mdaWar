@@ -14,6 +14,8 @@ namespace mdaWar
 
         public int WarId { get; set; }
 
+        public bool Alive { get; set; } = true;
+
         public virtual War War { get; set; }
     }
 }

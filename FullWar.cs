@@ -25,7 +25,7 @@ namespace mdaWar
             this.context = context;
         }
 
-        [FunctionName("FullWarSingleRun")]
+        [FunctionName("CreateFullWar")]
         public async Task<IActionResult> Create(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, ILogger log)
         {
@@ -49,7 +49,8 @@ namespace mdaWar
             var participants = requestModel.Participants.Select(x => new Participant
             {
                 Email = x.Email,
-                Name = x.Name
+                Name = x.Name,
+                War = war
             });
 
             await this.context.AddRangeAsync(participants);
@@ -91,7 +92,7 @@ namespace mdaWar
 
                 var msg = new SendGridMessage();
 
-                msg.SetFrom(new EmailAddress("dx@example.com", "SendGrid DX Team"));
+                msg.SetFrom(new EmailAddress("jmolla31@gmail.com", "MDA Warbot Team"));
 
                 var sendTo = participants.Select(x => new EmailAddress
                 {
@@ -106,7 +107,9 @@ namespace mdaWar
 
                 var response = await client.SendEmailAsync(msg);
 
-                this.context.Remove(participants[dies]);
+                participants[dies].Alive = false;
+
+                this.context.Update(participants[dies]);
 
                 await this.context.SaveChangesAsync();
             }
