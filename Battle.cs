@@ -20,12 +20,11 @@ namespace mdaWar
         }
 
         [FunctionName("Battle")]
-        public async Task Run([TimerTrigger("0 0 8 * * *")]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 0 8 * * 1-5")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation("Starting new battle round.");
 
-            var warList = await this.context.Wars.Include( x => x.Participants);
-            var warList2 = await this.context.Wars.ToListAsync();
+            var warList = await this.context.Wars.Include( x => x.Participants).Where( x => !x.Finished).ToListAsync();
 
             var weapons = new string[] { "watergun", "butter knife", "rusted candlestick", "toy rifle", "posioned potato", "broken Duff bottle",
                                         "BelleDelphine bathwater jar", "Avril Lavigne marble sculpture", "area 51 stolen raygun", "Outsystems manual"};
@@ -37,7 +36,7 @@ namespace mdaWar
 
             foreach (var war in warList)
             {
-                var participants = await this.context.Participants.Where(x => x.WarId == war.Id).ToListAsync();
+                var participants = war.Participants.ToList();
 
                 var lives = random.Next(participants.Count);
 

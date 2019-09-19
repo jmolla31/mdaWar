@@ -11,6 +11,8 @@ namespace mdaWar
 
         public string Name { get; set; }
 
+        public bool Finished { get; set; }
+
         public virtual ICollection<Participant> Participants { get; set; } = new Collection<Participant>();
     }
 }
