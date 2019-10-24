@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using mdaWar.Helpers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.EntityFrameworkCore;
@@ -13,23 +14,20 @@ namespace mdaWar
     public class Battle
     {
         private readonly Context context;
+        private readonly BattleHelper battleHelper;
 
-        public Battle(Context context)
+        public Battle(Context context, BattleHelper battleHelper)
         {
             this.context = context;
+            this.battleHelper = battleHelper;
         }
 
         [FunctionName("Battle")]
         public async Task Run([TimerTrigger("0 0 8 * * 1-5")]TimerInfo myTimer, ILogger log)
         {
-            log.LogInformation("Starting new battle round.");
+            log.LogInformation("Starting new battle round");
 
             var warList = await this.context.Wars.Include( x => x.Participants).Where( x => !x.Finished).ToListAsync();
-
-            var weapons = new string[] { "watergun", "butter knife", "rusted candlestick", "toy rifle", "posioned potato", "broken Duff bottle",
-                                        "BelleDelphine bathwater jar", "Avril Lavigne marble sculpture", "area 51 stolen raygun", "Outsystems manual"};
-
-            Random random = new Random();
 
             var apiKey = Environment.GetEnvironmentVariable("SENDGRID_APIKEY");
             var client = new SendGridClient(apiKey);
@@ -38,19 +36,9 @@ namespace mdaWar
             {
                 var participants = war.Participants.ToList();
 
-                var lives = random.Next(participants.Count);
-
-                var dies = 0;
-                do
-                {
-                    dies = random.Next(participants.Count);
-                } while (lives == dies);
-
-                var weapon = weapons[random.Next(weapons.Length - 1)];
+                var battleResult = this.battleHelper.SimulateEngagement(participants);
 
                 var msg = new SendGridMessage();
-
-                msg.SetFrom(new EmailAddress("javimollamico@gmail.com", "MDA Warbot Team"));
 
                 var sendTo = participants.Select(x => new EmailAddress
                 {
@@ -58,18 +46,12 @@ namespace mdaWar
                     Name = x.Name
                 }).ToList();
 
+                msg.SetFrom(new EmailAddress("javimollamico@gmail.com", "MDA Warbot Team"));
                 msg.AddTos(sendTo);
-
-
                 msg.SetSubject($"{war.Name} results at {DateTime.UtcNow.Date}");
-
-                msg.AddContent(MimeType.Text, $"{participants[lives].Name} kills {participants[dies].Name} with a {weapon}");
+                msg.AddContent(MimeType.Text, result);
 
                 var response = await client.SendEmailAsync(msg);
-
-                participants[dies].Alive = false;
-
-                this.context.Update(participants[dies]);
 
                 await this.context.SaveChangesAsync();
             }

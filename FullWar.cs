@@ -13,16 +13,19 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Collections.Generic;
 using mdaWar.Models;
+using mdaWar.Helpers;
 
 namespace mdaWar
 {
     public class FullWar
     {
         private readonly Context context;
-
-        public FullWar(Context context)
+        private readonly BattleHelper battleHelper;
+        
+        public FullWar(Context context, BattleHelper battleHelper)
         {
             this.context = context;
+            this.battleHelper = battleHelper;
         }
 
         [FunctionName("CreateFullWar")]
@@ -53,25 +56,20 @@ namespace mdaWar
                 War = war
             });
 
-            await this.context.AddRangeAsync(participants);
+            this.context.AddRange(participants);
 
             await this.context.SaveChangesAsync();
 
             return new OkObjectResult(war.Id);
         }
 
-        [FunctionName("FullWarSingleRun")]
+        [FunctionName("SingleSimulationCycle")]
         public async Task<IActionResult> SingleRun(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
-            log.LogInformation("Starting new battle round.");
+            log.LogInformation("Starting new battle round");
 
             var warList = await this.context.Wars.ToListAsync();
-
-            var weapons = new string[] { "watergun", "butter knife", "rusted candlestick", "toy rifle", "posioned potato", "broken Duff bottle",
-                                        "BelleDelphine bathwater jar", "Avril Lavigne marble sculpture", "area 51 stolen raygun", "Outsystems manual"};
-
-            Random random = new Random();
 
             var apiKey = Environment.GetEnvironmentVariable("SENDGRID_APIKEY");
             var client = new SendGridClient(apiKey);
@@ -80,16 +78,8 @@ namespace mdaWar
             {
                 var participants = await this.context.Participants.Where(x => x.WarId == war.Id).ToListAsync();
 
-                var lives = random.Next(participants.Count);
-
-                var dies = 0;
-                do
-                {
-                    dies = random.Next(participants.Count);
-                } while (lives == dies);
-
-                var weapon = weapons[random.Next(weapons.Length - 1)];
-
+                var battleResult = this.battleHelper.SimulateEngagement(participants);
+                
                 var msg = new SendGridMessage();
 
                 msg.SetFrom(new EmailAddress("jmolla31@gmail.com", "MDA Warbot Team"));
@@ -103,19 +93,15 @@ namespace mdaWar
 
                 msg.SetSubject($"{war.Name} results at {DateTime.UtcNow.Date}");
 
-                msg.AddContent(MimeType.Text, $"{participants[lives]} kills {participants[dies]} with a {weapon}");
+                msg.AddContent(MimeType.Text, battleResult);
 
                 var response = await client.SendEmailAsync(msg);
-
-                participants[dies].Alive = false;
-
-                this.context.Update(participants[dies]);
 
                 await this.context.SaveChangesAsync();
             }
 
 
-            return new OkObjectResult($"Hello");
+            return new OkObjectResult($"Simulation ended, results sent by email");
         }
 
         [FunctionName("FullWarHelp")]
