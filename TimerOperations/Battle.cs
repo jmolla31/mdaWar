@@ -49,7 +49,7 @@ namespace mdaWar
                 msg.SetFrom(new EmailAddress("javimollamico@gmail.com", "MDA Warbot Team"));
                 msg.AddTos(sendTo);
                 msg.SetSubject($"{war.Name} results at {DateTime.UtcNow.Date}");
-                msg.AddContent(MimeType.Text, result);
+                msg.AddContent(MimeType.Text, battleResult);
 
                 var response = await client.SendEmailAsync(msg);
 
