@@ -19,6 +19,7 @@ namespace mdaWar
 {
     public class FullWar
     {
+        private const bool V = true;
         private readonly Context context;
         private readonly BattleHelper battleHelper;
         
@@ -30,17 +31,19 @@ namespace mdaWar
 
         [FunctionName("CreateFullWar")]
         public async Task<IActionResult> Create(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "War")] HttpRequest req, ILogger log)
         {
             log.LogInformation("Creating a new FullWar");
 
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var requestModel = JsonConvert.DeserializeObject<WarCreateModel>(requestBody);
 
-            if (string.IsNullOrEmpty(requestModel.Name) || requestModel.Participants == null ||requestModel.Participants.Count() < 2)
-            {
-                return new BadRequestObjectResult("Malformed request body");
-            }
+
+            if (string.IsNullOrEmpty(requestModel.Name) || requestModel.Participants == null) return new BadRequestObjectResult("Malformed request body");
+
+            if (requestModel.Participants.Count() < 2) return new BadRequestObjectResult("At least 2 participants are required");
+
+            if (requestModel.Participants.GroupBy( x => x.Email).Any(g => g.Count() > 1)) return new BadRequestObjectResult("At least 2 participants are required");
 
             var war = new War
             {
@@ -106,7 +109,7 @@ namespace mdaWar
 
         [FunctionName("FullWarHelp")]
         public static IActionResult Help(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req, ILogger log)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "War")] HttpRequest req, ILogger log)
         {
             log.LogInformation("Processing FullWar help request.");
 
@@ -127,7 +130,8 @@ namespace mdaWar
                 "Welcome to the FullWar endpoint help",
                 "To start a war please send a POST request with a the war name and a list of participants for the contenders",
                 $"Body JSON example: {JsonConvert.SerializeObject(bodyExample)}",
-                "The war will be generated and the next battle will ocurr a the next 8:00AM UTC trigger"
+                "The war will be generated and the next battle will ocurr a the next 8:00AM UTC trigger",
+                "The participant emails should be unique and valid email addresses"
             };
 
             return new OkObjectResult(list);

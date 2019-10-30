@@ -24,7 +24,7 @@ namespace mdaWar
 
         [FunctionName("QuickWar")]
         public async Task<IActionResult> CreateQuickWar(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route ="QuickWar")] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("Creating a new QuickWar");
@@ -49,7 +49,7 @@ namespace mdaWar
 
         [FunctionName("QuickWarHelp")]
         public IActionResult Help(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req, ILogger log)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "QuickWar")] HttpRequest req, ILogger log)
         {
             log.LogInformation("Processing QuickWar help request.");
 

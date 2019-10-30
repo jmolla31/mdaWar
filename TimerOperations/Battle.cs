@@ -25,6 +25,8 @@ namespace mdaWar
         [FunctionName("Battle")]
         public async Task Run([TimerTrigger("0 0 8 * * 1-5")]TimerInfo myTimer, ILogger log)
         {
+            return;
+
             log.LogInformation("Starting new battle round");
 
             var warList = await this.context.Wars.Include( x => x.Participants).Where( x => !x.Finished).ToListAsync();
